@@ -1,4 +1,4 @@
-use futures::futures_lifetimes::{MyRequest, MyService, Service};
+use futures::futures_lifetimes::multi::{MyRequest, MyService, Service};
 
 #[tokio::main]
 async fn main() {
