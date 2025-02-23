@@ -13,6 +13,7 @@ pub trait Service<Request> {
 pub struct MyRequest;
 pub struct MyResponse;
 pub struct MyError;
+
 #[derive(Debug)]
 pub struct MyService;
 
