@@ -31,3 +31,9 @@ impl Service<MyRequest> for MyService {
 }
 
 fn static_check<T: 'static>(t: T) {}
+
+async fn runner() {
+    let mut m = MyService;
+    let mr = m.call(MyRequest);
+    let x = tokio::spawn(mr).await;
+}
