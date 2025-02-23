@@ -20,9 +20,12 @@ pub struct MyService;
 impl Service<MyRequest> for MyService {
     type Response = MyResponse;
     type Error = MyError;
+    // since there are 2 lifetimes, 'a doesn't have to be 'b.
+    // 'b = 'static
     type Future<'a, 'b> =
         Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send + 'b>>;
 
+    // 'b = 'static here but 'a borrow is decoupled from the result
     fn call<'a, 'b>(&'a mut self, req: MyRequest) -> Self::Future<'a, 'b> {
         Box::pin(async move {
             // println! ("{:?}", self);
@@ -31,4 +34,8 @@ impl Service<MyRequest> for MyService {
     }
 }
 
-fn static_check<T: 'static>(t: T) {}
+async fn runner() {
+    let mut m = MyService;
+    let mr = m.call(MyRequest);
+    tokio::spawn(mr);
+}

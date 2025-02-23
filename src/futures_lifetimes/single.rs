@@ -20,8 +20,9 @@ pub struct MyService;
 impl Service<MyRequest> for MyService {
     type Response = MyResponse;
     type Error = MyError;
+    // 'a:'static because of spawn
     type Future<'a> =
-        Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send + 'a>>; // 'a:'static because of spawn
+        Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send + 'a>>;
 
     // the borrow of mut self must live of 'static -> &'static mut self
     fn call<'a>(&'a mut self, req: MyRequest) -> Self::Future<'a> {
