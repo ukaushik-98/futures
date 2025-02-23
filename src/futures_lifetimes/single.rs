@@ -14,7 +14,7 @@ pub struct MyRequest;
 pub struct MyResponse;
 pub struct MyError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct MyService;
 
 impl Service<MyRequest> for MyService {
@@ -33,6 +33,7 @@ impl Service<MyRequest> for MyService {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
 pub struct MyServiceWrapper {
     inner: MyService,
 }
@@ -43,12 +44,13 @@ impl Service<MyRequest> for MyServiceWrapper {
     type Error = MyError;
 
     type Future<'a>
-        = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send + 'a>>
+        = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send + 'static>>
     where
         Self: 'a;
 
     fn call<'a>(&'a mut self, req: MyRequest) -> Self::Future<'a> {
-        self.inner.call(req)
+        let mut clone = self.clone();
+        Box::pin(async move { clone.inner.call(req).await })
     }
 }
 
@@ -56,5 +58,5 @@ async fn runner() {
     let m = MyService;
     let mut mw = MyServiceWrapper { inner: m };
     let mr = mw.call(MyRequest);
-    // let x = tokio::spawn(mr).await;
+    let x = tokio::spawn(mr).await;
 }
