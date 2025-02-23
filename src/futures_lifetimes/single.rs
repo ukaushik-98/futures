@@ -33,10 +33,28 @@ impl Service<MyRequest> for MyService {
     }
 }
 
-fn static_check<T: 'static>(t: T) {}
+pub struct MyServiceWrapper {
+    inner: MyService,
+}
+
+impl Service<MyRequest> for MyServiceWrapper {
+    type Response = MyResponse;
+
+    type Error = MyError;
+
+    type Future<'a>
+        = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send + 'a>>
+    where
+        Self: 'a;
+
+    fn call<'a>(&'a mut self, req: MyRequest) -> Self::Future<'a> {
+        self.inner.call(req)
+    }
+}
 
 async fn runner() {
-    let mut m = MyService;
-    let mr = m.call(MyRequest).await;
-    // tokio::spawn(mr);
+    let m = MyService;
+    let mut mw = MyServiceWrapper { inner: m };
+    let mr = mw.call(MyRequest);
+    // let x = tokio::spawn(mr).await;
 }
