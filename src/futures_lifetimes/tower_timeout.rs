@@ -27,10 +27,22 @@ impl<Request> Service<Request> for MyService {
 
 fn static_check<T: 'static>(t: T) {}
 
+async fn runner2(m: &'static mut MyService) {
+    let mut t = Timeout::new(m, Duration::from_millis(100));
+    let x = t.call(());
+    let y = tokio::spawn(async move {
+        let a = x.await;
+    })
+    .await;
+}
+
 async fn runner() {
     let mut m = MyService;
-    let mut t = Timeout::new(&mut m, Duration::from_millis(100));
+    let mut t = Timeout::new(m, Duration::from_millis(100));
     let x = t.call(());
-    static_check(x);
-    // let y = tokio::spawn(x).await;
+    // static_check(t);
+    let y = tokio::spawn(async move {
+        let a = x.await;
+    })
+    .await;
 }
