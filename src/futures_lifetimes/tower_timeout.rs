@@ -29,7 +29,7 @@ fn static_check<T: 'static>(t: T) {}
 
 async fn runner() {
     let mut m = MyService;
-    let mut t = Timeout::new(m, Duration::from_millis(100));
+    let mut t = Timeout::new(&mut m, Duration::from_millis(100));
     let x = t.call(());
     static_check(x);
     // let y = tokio::spawn(x).await;
