@@ -1,4 +1,4 @@
-use std::pin::Pin;
+use std::{pin::Pin, time::Duration};
 
 pub trait Service<Request> {
     type Response;
@@ -53,6 +53,8 @@ impl Service<MyRequest> for MyServiceWrapper {
         Box::pin(async move { clone.inner.call(req).await })
     }
 }
+
+fn static_check<T: 'static>(t: T) {}
 
 async fn runner() {
     let m = MyService;
