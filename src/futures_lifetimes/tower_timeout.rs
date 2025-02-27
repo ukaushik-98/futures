@@ -5,7 +5,7 @@ use tower::{Service, timeout::Timeout};
 pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
 
 struct MyService<'a> {
-    url: &'a String,
+    url: &'a str,
 }
 
 impl<'a, Request> Service<Request> for MyService<'a> {
@@ -30,15 +30,15 @@ impl<'a, Request> Service<Request> for MyService<'a> {
 
 fn static_check<T: 'static>(t: T) {}
 
-async fn runner2<'a>(m: &'a mut MyService<'a>) {
+async fn runner2<'a, 'b>(m: &'a mut MyService<'b>) {
     let mut t = Timeout::new(m, Duration::from_millis(100));
     let y = tokio::spawn(t.call(())).await;
 }
 
 async fn wrapper() {
-    let url = String::from("url");
+    // let url = String::from("url");
 
-    let mut m = MyService { url: &url };
+    let mut m = MyService { url: "url" };
     let x = runner2(&mut m);
 }
 
