@@ -4,16 +4,19 @@ use tower::{Service, timeout::Timeout};
 
 pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
 
-struct MyService;
+struct MyService<'a> {
+    url: &'a String,
+}
 
-impl<Request> Service<Request> for MyService {
-    type Response = ();
+impl<'a, Request> Service<Request> for MyService<'a> {
+    type Response = &'a String;
 
     type Error = Box<dyn Error + Send + Sync>;
 
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
     fn call(&mut self, req: Request) -> Self::Future {
+        // Box::pin(async { Ok(self.url) })
         todo!()
     }
 
@@ -27,22 +30,25 @@ impl<Request> Service<Request> for MyService {
 
 fn static_check<T: 'static>(t: T) {}
 
-async fn runner2(m: &'static mut MyService) {
+async fn runner2<'a>(m: &'a mut MyService<'a>) {
     let mut t = Timeout::new(m, Duration::from_millis(100));
-    let x = t.call(());
-    let y = tokio::spawn(async move {
-        let a = x.await;
-    })
-    .await;
+    let y = tokio::spawn(t.call(())).await;
 }
 
-async fn runner() {
-    let mut m = MyService;
-    let mut t = Timeout::new(m, Duration::from_millis(100));
-    let x = t.call(());
-    // static_check(t);
-    let y = tokio::spawn(async move {
-        let a = x.await;
-    })
-    .await;
+async fn wrapper() {
+    let url = String::from("url");
+
+    let mut m = MyService { url: &url };
+    let x = runner2(&mut m);
 }
+
+// async fn runner() {
+//     let mut m = MyService;
+//     let mut t = Timeout::new(m, Duration::from_millis(100));
+//     let x = t.call(());
+//     // static_check(t);
+//     let y = tokio::spawn(async move {
+//         let a = x.await;
+//     })
+//     .await;
+// }
