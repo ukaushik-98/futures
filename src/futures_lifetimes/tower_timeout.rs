@@ -30,25 +30,23 @@ impl<'a, Request> Service<Request> for MyService<'a> {
 
 fn static_check<T: 'static>(t: T) {}
 
-async fn runner2<'a, 'b>(m: &'a mut MyService<'b>) {
+async fn runner2<'a>(m: &'a mut MyService<'a>) {
     let mut t = Timeout::new(m, Duration::from_millis(100));
     // let y = tokio::spawn(t.call(())).await;
 }
 
 async fn wrapper() {
-    // let url = String::from("url");
-
     let mut m = MyService { url: "url" };
     let x = runner2(&mut m);
 }
 
-// async fn runner() {
-//     let mut m = MyService;
-//     let mut t = Timeout::new(m, Duration::from_millis(100));
-//     let x = t.call(());
-//     // static_check(t);
-//     let y = tokio::spawn(async move {
-//         let a = x.await;
-//     })
-//     .await;
-// }
+async fn runner() {
+    let mut m = MyService { url: "url" };
+    let mut t = Timeout::new(m, Duration::from_millis(100));
+    let x = t.call(());
+    // static_check(t);
+    let y = tokio::spawn(async move {
+        let a = x.await;
+    })
+    .await;
+}
