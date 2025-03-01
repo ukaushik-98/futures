@@ -4,8 +4,9 @@ use tower::{Service, timeout::Timeout};
 
 pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
 
+#[derive(Debug)]
 struct MyService<'a> {
-    url: &'a str,
+    url: &'a String,
 }
 
 impl<'a, Request> Service<Request> for MyService<'a> {
@@ -28,25 +29,30 @@ impl<'a, Request> Service<Request> for MyService<'a> {
     }
 }
 
+// async fn runner2<'a>(m: &'a mut MyService<'a>) {
+//     let mut t = Timeout::new(m, Duration::from_millis(100));
+//     // let y = tokio::spawn(t.call(())).await;
+// }
+
+// async fn wrapper() {
+//     let mut m = MyService { url: "url" };
+//     let x = runner2(&mut m);
+// }
+
 fn static_check<T: 'static>(t: T) {}
 
-async fn runner2<'a>(m: &'a mut MyService<'a>) {
-    let mut t = Timeout::new(m, Duration::from_millis(100));
-    // let y = tokio::spawn(t.call(())).await;
-}
-
-async fn wrapper() {
-    let mut m = MyService { url: "url" };
-    let x = runner2(&mut m);
-}
-
-async fn runner() {
-    let mut m = MyService { url: "url" };
-    let mut t = Timeout::new(m, Duration::from_millis(100));
+async fn runner(url: &'static String) {
+    // let url = String::from("url");
+    let mut m = MyService { url: &url };
+    let mut t = Timeout::new(&mut m, Duration::from_millis(100));
     let x = t.call(());
-    // static_check(t);
+
+    // static_check(cl);
     let y = tokio::spawn(async move {
         let a = x.await;
+        a
     })
     .await;
+
+    // println!("{:?}", m);
 }
