@@ -48,11 +48,11 @@ async fn runner(url: &'static String) {
     let x = t.call(());
 
     // static_check(cl);
+    let mut v = vec![1, 2, 3];
     let y = tokio::spawn(async move {
         let a = x.await;
         a
     })
     .await;
-
     // println!("{:?}", m);
 }
