@@ -35,12 +35,13 @@ where
     }
 }
 
-async fn runner(v: &'static Vec<i32>) {
-    // let v = vec![1, 2, 3];
-    let mut foo = FooService { url: v };
+async fn runner() {
+    let v = vec![1, 2, 3];
+    let mut foo = FooService { url: &mut v };
+    // let rf = &mut foo;
     // putting stuff in foo and moving it will cause issues
     let s = tokio::spawn(async move {
-        let x = foo.call(());
+        let x = foo.call(()).await;
     });
     println!("{:?}", v);
 }
