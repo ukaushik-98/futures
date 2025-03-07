@@ -27,7 +27,7 @@ where
     where
         Self: 'b;
 
-    fn call(&mut self, req: Request) -> Self::Future<'_> {
+    fn call(&mut self, _req: Request) -> Self::Future<'_> {
         Box::pin(async move {
             println!("{:?}", self.url);
             Ok(self.url)
@@ -35,13 +35,13 @@ where
     }
 }
 
-async fn runner() {
-    let v = vec![1, 2, 3];
-    let mut foo = FooService { url: &mut v };
+async fn runner(v: &'static Vec<i32>) {
+    // let mut v = vec![1, 2, 3];
+    // let mut foo = FooService { url: &mut v };
+    let mut foo = FooService { url: v };
     // let rf = &mut foo;
     // putting stuff in foo and moving it will cause issues
     let s = tokio::spawn(async move {
         let x = foo.call(()).await;
     });
-    println!("{:?}", v);
 }
