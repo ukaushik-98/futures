@@ -35,7 +35,7 @@ where
     }
 }
 
-async fn runner(v: &'static Vec<i32>) {
+async fn runner<'a: 'static>(v: &'a Vec<i32>) {
     // let mut v = vec![1, 2, 3];
     // let mut foo = FooService { url: &mut v };
     let mut foo = FooService { url: v };
