@@ -40,7 +40,8 @@ async fn runner<'a: 'static>(v: &'a Vec<i32>) {
     // let mut foo = FooService { url: &mut v };
     let mut foo = FooService { url: v };
     // let rf = &mut foo;
-    // putting stuff in foo and moving it will cause issues
+    // putting stuff in foo and moving it will cause issues unless the result future doesn't use
+    // the spawned structs
     let s = tokio::spawn(async move {
         let x = foo.call(()).await;
     });
