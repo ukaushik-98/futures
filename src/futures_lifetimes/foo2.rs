@@ -29,8 +29,7 @@ where
         't: 'a;
 
     fn call<'a>(&'a mut self, req: Request) -> Self::Future<'a> {
-        // Box::pin(async move { Ok(self.x) })
-        todo!()
+        Box::pin(async move { Ok(self.x) })
     }
 }
 
@@ -40,11 +39,9 @@ fn runner() {
     let b = a.call(());
 }
 
-fn spawn_runner<'a: 'static>(s: &'a String) {
+fn spawn_runner<'a>(s: &'a String) {
     // let s = "hello";
     let mut a = MyFooService { x: s };
     // let b = a.call(());
-    let s = tokio::spawn(async move {
-        let y = a.call(()).await;
-    });
+    // let s = tokio::spawn(a.call(()));
 }
