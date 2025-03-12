@@ -42,6 +42,6 @@ fn runner() {
 fn spawn_runner<'a>(s: &'a String) {
     // let s = "hello";
     let mut a = MyFooService { x: s };
-    // let b = a.call(());
+    let b = a.call(());
     // let s = tokio::spawn(a.call(()));
 }
