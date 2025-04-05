@@ -41,18 +41,16 @@ impl<'a, Request> Service<Request> for MyService<'a> {
 
 fn static_check<T: 'static>(t: T) {}
 
-async fn runner(url: &'static String) {
+async fn runner<'a: 'static>(url: &'a String) {
     // let url = String::from("url");
     let mut m = MyService { url: &url };
-    let mut t = Timeout::new(&mut m, Duration::from_millis(100));
-    let x = t.call(());
 
-    // static_check(cl);
     let mut v = vec![1, 2, 3];
     let y = tokio::spawn(async move {
+        let mut t = Timeout::new(m, Duration::from_millis(100));
+        let x = t.call(());
         let a = x.await;
-        a
     })
     .await;
-    // println!("{:?}", m);
+    println!("{:?}", url);
 }

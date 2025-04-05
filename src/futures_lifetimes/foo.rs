@@ -23,26 +23,25 @@ where
     type Error = ();
 
     type Future<'b>
-        = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send + 'b>>
+        = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>
     where
         Self: 'b;
 
     fn call(&mut self, _req: Request) -> Self::Future<'_> {
         Box::pin(async move {
-            println!("{:?}", self.url);
-            Ok(self.url)
+            // println!("{:?}", self.url);
+            Err(())
         })
     }
 }
 
-async fn runner<'a: 'static>(v: &'a Vec<i32>) {
-    // let mut v = vec![1, 2, 3];
-    // let mut foo = FooService { url: &mut v };
-    let mut foo = FooService { url: v };
-    // let rf = &mut foo;
-    // putting stuff in foo and moving it will cause issues unless the result future doesn't use
-    // the spawned structs
-    let s = tokio::spawn(async move {
-        let x = foo.call(()).await;
-    });
-}
+// async fn runner() {
+//     let mut v = vec![1, 2, 3];
+//     let mut foo = FooService { url: &v };
+//     // let rf = &mut foo;
+//     // putting stuff in foo and moving it will cause issues unless the result future doesn't use
+//     // the spawned structs
+//     let s = tokio::spawn(async move {
+//         let x = foo.call(()).await;
+//     });
+// }

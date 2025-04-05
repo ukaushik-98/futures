@@ -61,7 +61,7 @@ impl<Request> Service<Request> for MyService {
     type Error = Box<dyn Error + Send + Sync>;
 
     type Future<'a> =
-        Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send + 'static>>;
+        Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send + 'a>>;
 
     fn call<'a>(&'a mut self, req: Request) -> Self::Future<'a> {
         todo!()
