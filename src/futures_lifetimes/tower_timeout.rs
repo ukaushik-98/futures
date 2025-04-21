@@ -1,24 +1,38 @@
-use std::{error::Error, pin::Pin, time::Duration};
+use std::{error::Error, fmt::Display, pin::Pin, rc::Rc, time::Duration};
 
+use tokio::time::sleep;
 use tower::{Service, timeout::Timeout};
 
 pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 struct MyService<'a> {
     url: &'a String,
+}
+
+#[derive(Debug, Default)]
+struct MyError;
+
+impl Error for MyError {}
+
+impl Display for MyError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        todo!()
+    }
 }
 
 impl<'a, Request> Service<Request> for MyService<'a> {
     type Response = &'a String;
 
-    type Error = Box<dyn Error + Send + Sync>;
+    type Error = MyError;
 
     type Future = Pin<Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>>;
 
     fn call(&mut self, req: Request) -> Self::Future {
-        // Box::pin(async { Ok(self.url) })
-        todo!()
+        Box::pin(async move {
+            sleep(Duration::from_millis(2)).await;
+            Err(MyError)
+        })
     }
 
     fn poll_ready(
@@ -39,18 +53,20 @@ impl<'a, Request> Service<Request> for MyService<'a> {
 //     let x = runner2(&mut m);
 // }
 
-fn static_check<T: 'static>(t: T) {}
+fn static_check<T>(t: T)
+where
+    T: 'static,
+{
+}
 
-async fn runner<'a: 'static>(url: &'a String) {
-    // let url = String::from("url");
-    let mut m = MyService { url: &url };
-
-    let mut v = vec![1, 2, 3];
+async fn runner() {
     let y = tokio::spawn(async move {
+        let url = String::from("url");
+        let mut m = MyService { url: &url };
+
         let mut t = Timeout::new(m, Duration::from_millis(100));
         let x = t.call(());
         let a = x.await;
     })
     .await;
-    println!("{:?}", url);
 }

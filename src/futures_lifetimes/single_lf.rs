@@ -1,28 +1,27 @@
-use std::{pin::Pin, time::Duration};
+use std::{pin::Pin, rc::Rc, time::Duration};
 
-pub trait Service<Request> {
+use tokio::time::sleep;
+
+trait Service<Request> {
     type Response;
     type Error;
-    type Future<'a>: Future<Output = Result<Self::Response, Self::Error>>
+    type Future<'a>: Future<Output = Result<Self::Response, Self::Error>> + 'a
     where
         Self: 'a;
 
     fn call<'a>(&'a mut self, req: Request) -> Self::Future<'a>;
 }
 
-pub struct MyRequest;
-pub struct MyResponse;
-pub struct MyError;
+struct MyRequest;
+struct MyResponse;
+struct MyError;
 
 #[derive(Debug, Clone, Copy)]
-pub struct MyService<T> {
+struct MyService<T> {
     inner: T,
 }
 
-impl<T> Service<MyRequest> for MyService<T>
-where
-    T: Send,
-{
+impl<T> Service<MyRequest> for MyService<T> {
     type Response = T;
     type Error = MyError;
     // 'a:'static because of spawn
@@ -41,14 +40,11 @@ where
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct MyServiceWrapper<T> {
+struct MyServiceWrapper<T> {
     inner: MyService<T>,
 }
 
-impl<T> Service<MyRequest> for MyServiceWrapper<T>
-where
-    T: Send,
-{
+impl<T> Service<MyRequest> for MyServiceWrapper<T> {
     type Response = T;
 
     type Error = MyError;
@@ -64,19 +60,31 @@ where
     }
 }
 
-fn static_check<T>(x: T)
+fn create_T<'a, T>() -> T {
+    todo!()
+}
+
+fn create_serve<'a, T>(x: T) -> MyServiceWrapper<T> {
+    let m = MyService { inner: x };
+    MyServiceWrapper { inner: m }
+}
+
+fn static_check<T>(t: T)
 where
-    T: 'static + Send,
+    T: 'static,
 {
 }
 
-async fn runner<'a, T>(x: &'a T)
+async fn runner<'a, T>()
 where
-    T: Send + Sync + 'a,
-    'a: 'static,
+    T: Sync + Send + 'a,
 {
-    // let a = mw.call(MyRequest);
-    let m = MyService { inner: x };
-    let mut mw = MyServiceWrapper { inner: m };
-    // let x = tokio::spawn(mw.call(MyRequest)).await;
+    let x = tokio::spawn(async move {
+        let t = create_T::<T>();
+        let mut mw = create_serve(t);
+        let x = mw.call(MyRequest).await;
+
+        sleep(Duration::from_millis(100)).await;
+    })
+    .await;
 }
